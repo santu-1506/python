@@ -1,0 +1,80 @@
+import re
+import secrets
+import string
+
+
+class UsernameGenerator:
+    DEFAULT_ADJECTIVES = [
+        "silent", "rapid", "bright", "clever", "bold",
+        "calm", "sharp", "prime", "swift", "fresh"
+    ]
+
+    DEFAULT_NOUNS = [
+        "coder", "pixel", "rocket", "matrix", "ninja",
+        "wizard", "vector", "logic", "byte", "cloud"
+    ]
+
+    def __init__(
+        self,
+        adjectives=None,
+        nouns=None,
+        separator="",
+        suffix_length=4,
+        max_length=20
+    ):
+        self.adjectives = adjectives or self.DEFAULT_ADJECTIVES
+        self.nouns = nouns or self.DEFAULT_NOUNS
+        self.separator = separator
+        self.suffix_length = suffix_length
+        self.max_length = max_length
+
+        self._validate_config()
+
+    def _validate_config(self):
+        if not self.adjectives:
+            raise ValueError("adjectives list cannot be empty")
+
+        if not self.nouns:
+            raise ValueError("nouns list cannot be empty")
+
+        if self.suffix_length < 0:
+            raise ValueError("suffix_length cannot be negative")
+
+        if self.max_length < 5:
+            raise ValueError("max_length should be at least 5")
+
+    def slugify(self, value):
+        value = value.lower().strip()
+        value = re.sub(r"[^a-z0-9]+", "", value)
+        return value
+
+    def generate(self, name=None):
+        if name:
+            base = self.slugify(name)
+        else:
+            base = self.separator.join([
+                secrets.choice(self.adjectives),
+                secrets.choice(self.nouns)
+            ])
+
+        if not base:
+            base = self.separator.join([
+                secrets.choice(self.adjectives),
+                secrets.choice(self.nouns)
+            ])
+
+        suffix = "".join(
+            secrets.choice(string.digits)
+            for _ in range(self.suffix_length)
+        )
+
+        username = f"{base}{self.separator}{suffix}" if suffix else base
+
+        return username[:self.max_length]
+
+
+generator = UsernameGenerator(separator="_", suffix_length=5)
+
+print(generator.generate("Santosh"))
+print(generator.generate("Elon Musk"))
+print(generator.generate())
